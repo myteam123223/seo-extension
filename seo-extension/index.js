@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import 'index.css';
-import SEOExtension from './src/lib/SEOExtension';
+import './src/index.css';
+import SEOExtension from './src/SEOExtension';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
