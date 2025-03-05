@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../src/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 const SEOExtension = () => {
@@ -42,21 +42,29 @@ const SEOExtension = () => {
   });
 
   const fetchPageData = async () => {
-    // Lógica para obtener datos de la página actual
-    // Esta función se implementaría para extraer información de la página web actual
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "analyzePage" }, (response) => {
-        if (response) {
-          setPageData(response);
-        }
+    try {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "analyzePage" }, (response) => {
+          if (response) {
+            setPageData(response);
+            console.log("Data received:", response);
+          } else {
+            console.error("No response from content script or error:", chrome.runtime.lastError);
+          }
+        });
       });
-    });
+    } catch (error) {
+      console.error("Error fetching page data:", error);
+    }
   };
 
   useEffect(() => {
     fetchPageData();
   }, []);
 
+  // ... Resto del código sin cambios
+  
+  // Componentes de renderizado de tabs 
   const renderGeneralTab = () => (
     <Card>
       <CardHeader>
