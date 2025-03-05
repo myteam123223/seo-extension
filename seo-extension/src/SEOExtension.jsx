@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../src/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "../src/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./src/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "./src/components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 const SEOExtension = () => {
