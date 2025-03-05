@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./src/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "./src/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 const SEOExtension = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [pageData, setPageData] = useState({
     general: {
       metaTitle: '',
@@ -43,18 +45,49 @@ const SEOExtension = () => {
 
   const fetchPageData = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "analyzePage" }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error en chrome.tabs.query:", chrome.runtime.lastError);
+          setError("Error al obtener la pestaña activa");
+          setLoading(false);
+          return;
+        }
+        
+        if (!tabs || tabs.length === 0) {
+          console.error("No se encontró una pestaña activa");
+          setError("No se encontró una pestaña activa");
+          setLoading(false);
+          return;
+        }
+        
+        const activeTab = tabs[0];
+        
+        chrome.tabs.sendMessage(activeTab.id, { action: "analyzePage" }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error en sendMessage:", chrome.runtime.lastError);
+            setError("Error al comunicarse con la página. ¿La página ya ha cargado completamente?");
+            setLoading(false);
+            return;
+          }
+          
           if (response) {
+            console.log("Datos recibidos:", response);
             setPageData(response);
-            console.log("Data received:", response);
+            setLoading(false);
           } else {
-            console.error("No response from content script or error:", chrome.runtime.lastError);
+            console.error("No se recibió respuesta del content script");
+            setError("No se pudo analizar la página. Intenta recargar la página y volver a abrir la extensión.");
+            setLoading(false);
           }
         });
       });
     } catch (error) {
-      console.error("Error fetching page data:", error);
+      console.error("Error al obtener datos de la página:", error);
+      setError("Error inesperado: " + error.message);
+      setLoading(false);
     }
   };
 
@@ -62,7 +95,39 @@ const SEOExtension = () => {
     fetchPageData();
   }, []);
 
-  // ... Resto del código sin cambios
+  // Estado de carga
+  if (loading) {
+    return (
+      <div className="w-[600px] h-[400px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Analizando la página...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Estado de error
+  if (error) {
+    return (
+      <div className="w-[600px] p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-500">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{error}</p>
+            <button 
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={fetchPageData}
+            >
+              Reintentar
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   // Componentes de renderizado de tabs 
   const renderGeneralTab = () => (
