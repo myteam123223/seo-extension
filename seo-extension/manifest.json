@@ -32,5 +32,11 @@
     "16": "public/icon16.png",
     "48": "public/icon48.png",
     "128": "public/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["public/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
